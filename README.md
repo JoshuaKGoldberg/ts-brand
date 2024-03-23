@@ -40,7 +40,7 @@ retrieve the user who wrote said post:
 
 ```ts
 function authorOfPost(postId: number): Promise<User> {
-  return getPost(postId).then(post => getUser(post.id));
+  return getPost(postId).then((post) => getUser(post.id));
 }
 ```
 
@@ -49,7 +49,7 @@ passed `post.authorId`:
 
 ```ts
 function authorOfPost(postId: number): Promise<User> {
-  return getPost(postId).then(post => getUser(post.authorId));
+  return getPost(postId).then((post) => getUser(post.authorId));
 }
 ```
 
@@ -77,11 +77,11 @@ interface Post {
 
 We have:
 
-* Defined the ID types in terms of branded types with different branding types
-* Substituted ad-hoc `number` types with a
+- Defined the ID types in terms of branded types with different branding types
+- Substituted ad-hoc `number` types with a
   [lookup type](https://github.com/Microsoft/TypeScript/wiki/What's-new-in-TypeScript#keyof-and-lookup-types), thus designating the interface as the centerpiece
-* Retained the same runtime semantics as the original code
-* Made our original buggy example fail to compile
+- Retained the same runtime semantics as the original code
+- Made our original buggy example fail to compile
 
 There is one more risk left. If someone else were to define a different kind of
 `Post`, and also wrote `Brand<number, 'post'>`, it would still be possible to
@@ -188,7 +188,7 @@ const UserId: Brander<UserId> = identity;
 
 ### `function make<B extends AnyBrand>(): Brander<B>`
 
-Produces a `Brander<B>`, given a brand type `B`. This simply returns
+Produces a `Brander<B>`, given a brand type `B`. By default this returns
 `identity` but relies on type inference to give the return type the correct
 type.
 
@@ -198,6 +198,20 @@ Example:
 type UserId = Brand<number, 'user'>;
 const UserId = make<UserId>();
 const myUserId = UserId(42);
+```
+
+Optionally, you may provide a validation function to assert that the value is
+the expected data shape. This may be done by passing a function to `make`:
+
+```ts
+type UserId = Brand<number, 'user'>;
+const UserId = make<UserId>((value) => {
+  if (value <= 0) {
+    throw new Error(`Non-positive value: ${value}`);
+  }
+});
+UserId(42); // Ok
+UserId(-1); // Error: Non-positive value: -1
 ```
 
 ## Complete Example
